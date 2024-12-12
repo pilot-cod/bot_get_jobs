@@ -12,14 +12,33 @@ def fetch_jobs(keyword, location, num_jobs=10):
     }
     jobs = []
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+    "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+    "Accept-Language": "en-US,en;q=0.9",
+    "Accept-Encoding": "gzip, deflate, br",
+    "Connection": "keep-alive",
+    "Referer": "https://www.indeed.com/",
+    "Upgrade-Insecure-Requests": "1"
+    }
+
+    cookies = {
+    "CTK": "1iegsinjfh9eh800",  # Thay "cookie_name" và "cookie_value" bằng giá trị thực
     }
 
     while len(jobs) < num_jobs:
-        response = requests.get(base_url, params=params, headers=headers)
+        session = requests.Session()
+        session.headers.update(headers)
+
+        # Thực hiện yêu cầu với session
+        response = session.get(base_url, params=params, headers=headers, cookies=cookies)
+        print(f"URL: {response.url}")
+        print(f"Status Code: {response.status_code}")
+
         if response.status_code != 200:
-            print(f"Lỗi: {response.status_code}")
+            print("Request bị lỗi. Không thể tiếp tục.")
             break
+        else:
+            print("Request thành công.")
 
         soup = BeautifulSoup(response.text, "html.parser")
         job_cards = soup.find_all("div", class_="job_seen_beacon")
@@ -28,7 +47,7 @@ def fetch_jobs(keyword, location, num_jobs=10):
             title = card.find("h2", class_="jobTitle").get_text(strip=True)
             company = card.find("span", class_="companyName").get_text(strip=True)
             link = card.find("a", href=True)["href"]
-            job_url = "https://www.indeed.com" + link
+            job_url = "https://www.indeed.com/" + link
 
             jobs.append({
                 "title": title,
@@ -58,8 +77,8 @@ def send_to_google_sheets(data, script_url):
 
 if __name__ == "__main__":
     # Thông tin tìm kiếm
-    keyword = "Python Developer"
-    location = "New York"
+    keyword = " IT"
+    location = "Vietnam"
     num_jobs = 10
 
     # URL của Google Apps Script (thay YOUR_WEB_APP_URL bằng URL thật)
